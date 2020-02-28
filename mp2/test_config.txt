@@ -1,0 +1,63 @@
+[Test1]                                 
+Window : (300, 200)                     # (Width, Height)
+
+ArmBase : (150, 190)                    # (x-coordinate, y-coordinate) 
+
+ArmLinks : [
+                (100, 40, 5, (20, 160)),    # (length, initial angle, padding distance, (min angle, max angle)
+                (80, 0, 1, (-150, 150)),                 
+           ]
+
+Obstacles : [                
+                (70, 50, 15),
+                (140, 30, 17),     
+                (115, 75, 17)
+            ]
+
+Goals : [
+            (110, 40, 10)               # (x-coordinate, y-coordinate, radius)        
+        ]
+
+[Test2]                                 
+Window : (300, 200)                     # (Width, Height)
+
+ArmBase : (150, 190)                    # (x-coordinate, y-coordinate) 
+
+ArmLinks : [
+                (100, 60, 5, (20, 160)),    # (length, initial angle, padding distance, (min angle, max angle)
+                (40, 60, 5, (-150, 150)),                 
+           ]
+
+Obstacles : [                
+                (220, 120, 15),
+                (150, 60, 17),     
+                (200, 50, 17)
+            ]
+
+Goals : [
+            (240, 80, 10),               # (x-coordinate, y-coordinate, radius)        
+            (50, 80, 10)
+        ] 
+
+[BasicMap]
+Window : (300, 200)                     # (Width, Height)
+
+ArmBase : (150, 200)                    # (x-coordinate, y-coordinate) 
+
+ArmLinks : [
+                (100, 95, 5, (0, 180)),    # (length, initial angle, padding distance, (min angle, max angle)
+                (50, 60, 5, (-150, 150)),                 
+           ]
+
+Obstacles : [
+                (125, 70, 10),          # (x-coordinate, y-coordinate, radius)    
+                (80, 90, 10),
+                (165, 30, 10),     
+                (185, 60, 10)
+            ]
+
+Goals : [
+            (150, 50, 10)               # (x-coordinate, y-coordinate, radius)        
+        ]
+        
+
