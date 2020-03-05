@@ -100,10 +100,10 @@ def makeProbs (wordCount, smoothing_parameter):
     for word in wordCount:
         tot_words += wordCount[word]
 
-    u_prob = smoothing_parameter/(tot_words + smoothing_parameter*(tot_types+1))
+    u_prob = smoothing_parameter/(tot_words + smoothing_parameter*(tot_types))
 
     for word in wordCount:
-        prob = (wordCount[word] + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types+1))
+        prob = (wordCount[word] + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types))
         probmap[word] = prob
 
         return probmap, u_prob 
