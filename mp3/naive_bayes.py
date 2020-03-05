@@ -14,7 +14,7 @@ within this file for Part 1 -- the unrevised staff files will be used for all ot
 files and classes when code is run, so be careful to not modify anything else.
 """
 
-import numpy as numpy
+import numpy as np
 import math
 from collections import Counter
 
@@ -51,22 +51,22 @@ def naiveBayes(train_set, train_labels, dev_set, smoothing_parameter, pos_prior)
     log_pos_unkown = np.log(pos_unknown)
     log_neg_unkown = np.log(neg_unknown)
 
-    dev_labels[]
+    dev_labels = []
 
-    for i in range(len(dev)):
+    for list in dev_set:
         pos_p = 0
         neg_p = 0
 
-        for word in dev_set[i]:
-            if word in pos_words_count_map:
-                pos_p += pos_words_probs_map["word"]
+        for word in list:
+            if word in pos_words_probs_map:
+                pos_p += np.log(pos_words_probs_map[word])
             else:
-                pos_p += pos_unknown
+                pos_p += log_pos_unkown
 
-            if word in neg_words_count_map:
-                neg_p += neg_words_probs_map["word"]
+            if word in neg_words_probs_map:
+                neg_p += np.log(neg_words_probs_map[word])
             else:
-                neg_p += neg_unknown
+                neg_p += log_neg_unkown
 
         if (pos_p > neg_p):
             dev_labels.append(1)
@@ -74,6 +74,7 @@ def naiveBayes(train_set, train_labels, dev_set, smoothing_parameter, pos_prior)
             dev_labels.append(0)
 
     # return predicted labels of development set (make sure it's a list, not a numpy array or similar)
+    #print()
     return dev_labels
 
 def getWordCountMap(train_set, train_labels, isNeg):
@@ -86,8 +87,8 @@ def getWordCountMap(train_set, train_labels, isNeg):
 
         for word in cur:
             if word in word_count:
-                word_count["word"] += 1
-            word_count["word"] = 1
+                word_count[word] += 1
+            word_count[word] = 1
 
     return word_count
 
@@ -97,12 +98,12 @@ def makeProbs (wordCount, smoothing_parameter):
     tot_types = len(wordCount)
 
     for word in wordCount:
-        tot_words += wordCount["word"]
+        tot_words += wordCount[word]
 
     u_prob = smoothing_parameter/(tot_words + smoothing_parameter*(tot_types+1))
 
     for word in wordCount:
-        prob = (wordCount["word"] + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types+1))
-        probmap["word"] = prob
+        prob = (wordCount[word] + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types+1))
+        probmap[word] = prob
 
         return probmap, u_prob 
