@@ -40,11 +40,41 @@ def naiveBayes(train_set, train_labels, dev_set, smoothing_parameter, pos_prior)
 
 
     # TODO: Write your code here
-     
+    pos_words_count_map = getWordCountMap(train_set, train_labels, 0)
+    neg_words_count_map = getWordCountMap(train_set, train_labels, 1)
 
+    pos_words_probs_map, pos_unknown = makeProbs(pos_words_count_map, smoothing_parameter)
+    neg_words_probs_map, neg_unknown = makeProbs(neg_words_count_map, smoothing_parameter)
+
+    #log_pos_probs = np.log(pos_probs)
+    #log_neg_probs = np.log(neg_probs)
+    log_pos_unkown = np.log(pos_unknown)
+    log_neg_unkown = np.log(neg_unknown)
+
+    dev_labels[]
+
+    for i in range(len(dev)):
+        pos_p = 0
+        neg_p = 0
+
+        for word in dev_set[i]:
+            if word in pos_words_count_map:
+                pos_p += pos_words_probs_map["word"]
+            else:
+                pos_p += pos_unknown
+
+            if word in neg_words_count_map:
+                neg_p += neg_words_probs_map["word"]
+            else:
+                neg_p += neg_unknown
+
+        if (pos_p > neg_p):
+            dev_labels.append(1)
+        else:
+            dev_labels.append(0)
 
     # return predicted labels of development set (make sure it's a list, not a numpy array or similar)
-    return []
+    return dev_labels
 
 def getWordCountMap(train_set, train_labels, isNeg):
     word_count = {}
@@ -62,7 +92,7 @@ def getWordCountMap(train_set, train_labels, isNeg):
     return word_count
 
 def makeProbs (wordCount, smoothing_parameter):
-    problist = []
+    probmap = {}
     tot_words = 0
     tot_types = len(wordCount)
 
@@ -71,8 +101,8 @@ def makeProbs (wordCount, smoothing_parameter):
 
     u_prob = smoothing_parameter/(tot_words + smoothing_parameter*(tot_types+1))
 
-    for count in wordCount.values():
-        prob = (count + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types+1))
-        problist.append(prob)
+    for word in wordCount:
+        prob = (wordCount["word"] + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types+1))
+        probmap["word"] = prob
 
-        return problist, u_prob 
+        return probmap, u_prob 
