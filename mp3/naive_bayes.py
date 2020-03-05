@@ -67,6 +67,8 @@ def naiveBayes(train_set, train_labels, dev_set, smoothing_parameter, pos_prior)
                 neg_p += np.log(neg_words_probs_map[word])
             else:
                 neg_p += log_neg_unkown
+        pos_p += np.log(pos_prior)
+        neg_p += np.log(1-pos_prior)
 
         if (pos_p > neg_p):
             dev_labels.append(1)
