@@ -60,3 +60,19 @@ def getWordCountMap(train_set, train_labels, isNeg):
             word_count["word"] = 1
 
     return word_count
+
+def makeProbs (wordCount, smoothing_parameter):
+    problist = []
+    tot_words = 0
+    tot_types = len(wordCount)
+
+    for word in wordCount:
+        tot_words += wordCount["word"]
+
+    u_prob = smoothing_parameter/(tot_words + smoothing_parameter*(tot_types+1))
+
+    for count in wordCount.values():
+        prob = (count + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types+1))
+        problist.append(prob)
+
+        return problist, u_prob 
