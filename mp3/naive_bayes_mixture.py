@@ -88,9 +88,6 @@ def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_sm
 
     pos_prior - positive prior probability (between 0 and 1)
     """
- 
-
-
     # TODO: Write your code here
 
     # Unigram part
@@ -99,9 +96,6 @@ def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_sm
 
     pos_words_probs_map, pos_unknown = makeProbs(pos_words_count_map, unigram_smoothing_parameter)
     neg_words_probs_map, neg_unknown = makeProbs(neg_words_count_map, unigram_smoothing_parameter)
-
-    log_pos_unkown = np.log(pos_unknown)
-    log_neg_unkown = np.log(neg_unknown)
 
     dev_labels = []
     dev_neg = []
@@ -115,12 +109,12 @@ def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_sm
             if word in pos_words_probs_map:
                 pos_p += np.log(pos_words_probs_map[word])
             else:
-                pos_p += log_pos_unkown
+                pos_p += np.log(pos_unknown)
 
             if word in neg_words_probs_map:
                 neg_p += np.log(neg_words_probs_map[word])
             else:
-                neg_p += log_neg_unkown
+                neg_p += np.log(neg_unknown)
         pos_p += np.log(pos_prior)
         neg_p += np.log(1-pos_prior)
 
@@ -133,9 +127,6 @@ def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_sm
 
     bi_pos_probs_map, bi_pos_uk = makeProbs(bi_pos_count_map, bigram_smoothing_parameter)
     bi_neg_probs_map, bi_neg_uk = makeProbs(bi_neg_count_map, bigram_smoothing_parameter)
-
-    log_bi_pos_uk = np.log(bi_pos_uk)
-    log_bi_neg_uk = np.log(bi_neg_uk)
 
     bi_dev_pos = []
     bi_dev_neg = []
@@ -151,12 +142,12 @@ def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_sm
                 if bg in bi_pos_probs_map:
                     bi_pos_p += np.log(bi_pos_probs_map[bg])
                 else:
-                    bi_pos_p += log_bi_pos_uk
+                    bi_pos_p += np.log(bi_pos_uk)
 
                 if bg in bi_neg_probs_map:
                     bi_neg_p += np.log(bi_neg_probs_map[bg])
                 else:
-                    bi_neg_p += log_bi_neg_uk
+                    bi_neg_p += np.log(bi_neg_uk)
         bi_pos_p += np.log(pos_prior)
         bi_neg_p += np.log(1-pos_prior)
 
