@@ -50,7 +50,7 @@ def getBigramMap(train_set, train_labels, isNeg):
                     bigram_map[bg] = 1
     return bigram_map
 
-def makeProbs (bg_map, unigram_smoothing_parameter):
+def makeProbs (bg_map, smoothing_parameter):
     probmap = {}
     tot_bg = 0
     tot_types = len(bg_map)
@@ -58,10 +58,10 @@ def makeProbs (bg_map, unigram_smoothing_parameter):
     for bg in bg_map:
         tot_bg += bg_map[bg]
 
-    u_prob = unigram_smoothing_parameter/(tot_bg + unigram_smoothing_parameter*(tot_types))
+    u_prob = smoothing_parameter/(tot_bg + smoothing_parameter*(tot_types))
 
     for bg in bg_map:
-        prob = (bg_map[bg] + unigram_smoothing_parameter)/(tot_bg + unigram_smoothing_parameter*(tot_types))
+        prob = (bg_map[bg] + smoothing_parameter)/(tot_bg + smoothing_parameter*(tot_types))
         probmap[bg] = prob
 
     return probmap, u_prob 
@@ -148,8 +148,7 @@ def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_sm
                     bi_neg_p += np.log(bi_neg_probs_map[bg])
                 else:
                     bi_neg_p += np.log(bi_neg_uk)
-        bi_pos_p += np.log(pos_prior)
-        bi_neg_p += np.log(1-pos_prior)
+
 
         bi_dev_pos.append(bi_pos_p)
         bi_dev_neg.append(bi_neg_p)
@@ -157,6 +156,9 @@ def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_sm
     for i in range(len(dev_set)):
         p_n = (1-bigram_lambda)*dev_neg[i] + (bigram_lambda)*bi_dev_neg[i]
         p_p = (1-bigram_lambda)*dev_pos[i] + (bigram_lambda)*bi_dev_pos[i]
+
+        p_p += np.log(pos_prior)
+        p_n += np.log(1-pos_prior)
 
         if p_p > p_n:
             dev_labels.append(1)
