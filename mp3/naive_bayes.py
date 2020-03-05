@@ -40,8 +40,8 @@ def naiveBayes(train_set, train_labels, dev_set, smoothing_parameter, pos_prior)
 
 
     # TODO: Write your code here
-    pos_words_count_map = getWordCountMap(train_set, train_labels, 0)
-    neg_words_count_map = getWordCountMap(train_set, train_labels, 1)
+    pos_words_count_map = getWordCountMap(train_set, train_labels, 1)
+    neg_words_count_map = getWordCountMap(train_set, train_labels, 0)
 
     pos_words_probs_map, pos_unknown = makeProbs(pos_words_count_map, smoothing_parameter)
     neg_words_probs_map, neg_unknown = makeProbs(neg_words_count_map, smoothing_parameter)
@@ -103,10 +103,10 @@ def makeProbs (wordCount, smoothing_parameter):
     for word in wordCount:
         tot_words += wordCount[word]
 
-    u_prob = smoothing_parameter/(tot_words + smoothing_parameter*(tot_types+1))
+    u_prob = smoothing_parameter/(tot_words + smoothing_parameter*(tot_types))
 
     for word in wordCount:
-        prob = (wordCount[word] + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types+1))
+        prob = (wordCount[word] + smoothing_parameter)/(tot_words + smoothing_parameter*(tot_types))
         probmap[word] = prob
 
-        return probmap, u_prob 
+    return probmap, u_prob 
