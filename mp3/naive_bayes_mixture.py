@@ -42,12 +42,12 @@ def getBigramMap(train_set, train_labels, isNeg):
             continue
         cur = train_set[i]
         for j in range(len(cur)-1):
-            if j%2 == 0:
-                bg = tuple((cur[j], cur[j+1]))
-                if bg in bigram_map:
-                    bigram_map[bg] += 1
-                else:
-                    bigram_map[bg] = 1
+           # if j%2 == 0:
+            bg = tuple((cur[j], cur[j+1]))
+            if bg in bigram_map:
+                bigram_map[bg] += 1
+            else:
+                bigram_map[bg] = 1
     return bigram_map
 
 def makeProbs (bg_map, smoothing_parameter):
@@ -136,29 +136,28 @@ def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_sm
         bi_neg_p = 0
 
         for j in range(len(list)-1):
-            if j%2 == 0:
-                bg = tuple((list[j], list[j+1]))
+            #if j%2 == 0:
+            bg = tuple((list[j], list[j+1]))
 
-                if bg in bi_pos_probs_map:
-                    bi_pos_p += np.log(bi_pos_probs_map[bg])
-                else:
-                    bi_pos_p += np.log(bi_pos_uk)
+            if bg in bi_pos_probs_map:
+                bi_pos_p += np.log(bi_pos_probs_map[bg])
+            else:
+                bi_pos_p += np.log(bi_pos_uk)
 
-                if bg in bi_neg_probs_map:
-                    bi_neg_p += np.log(bi_neg_probs_map[bg])
-                else:
-                    bi_neg_p += np.log(bi_neg_uk)
-
+            if bg in bi_neg_probs_map:
+                bi_neg_p += np.log(bi_neg_probs_map[bg])
+            else:
+                bi_neg_p += np.log(bi_neg_uk)
+        bi_pos_p += np.log(pos_prior)
+        bi_neg_p += np.log(1-pos_prior)
 
         bi_dev_pos.append(bi_pos_p)
         bi_dev_neg.append(bi_neg_p)
 
     for i in range(len(dev_set)):
         p_n = (1-bigram_lambda)*dev_neg[i] + (bigram_lambda)*bi_dev_neg[i]
-        p_p = (1-bigram_lambda)*dev_pos[i] + (bigram_lambda)*bi_dev_pos[i]
+        p_p = (1-bigram_lambda)*dev_pos[i] + (bigram_lambda)*bi_dev_pos[i] 
 
-        p_p += np.log(pos_prior)
-        p_n += np.log(1-pos_prior)
 
         if p_p > p_n:
             dev_labels.append(1)
