@@ -40,8 +40,23 @@ def naiveBayes(train_set, train_labels, dev_set, smoothing_parameter, pos_prior)
 
 
     # TODO: Write your code here
-    
+     
 
 
     # return predicted labels of development set (make sure it's a list, not a numpy array or similar)
     return []
+
+def getWordCountMap(train_set, train_labels, isNeg):
+    word_count = {}
+
+    for i in range(len(train_labels)):
+        if (train_labels[i] != isNeg):
+            continue
+        cur = train_set[i]
+
+        for word in cur:
+            if word in word_count:
+                word_count["word"] += 1
+            word_count["word"] = 1
+
+    return word_count
