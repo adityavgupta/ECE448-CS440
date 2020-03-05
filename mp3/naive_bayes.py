@@ -88,7 +88,8 @@ def getWordCountMap(train_set, train_labels, isNeg):
         for word in cur:
             if word in word_count:
                 word_count[word] += 1
-            word_count[word] = 1
+            else:
+                word_count[word] = 1
 
     return word_count
 
