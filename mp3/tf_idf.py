@@ -19,6 +19,29 @@ import math
 from collections import Counter
 import time
 
+# num of docs in train set containing word w
+def no_docs_with_word (train_set, train_labels, isPos):
+    word_doc = {}
+    for i in range(len(train_labels)):
+        if train_labels[i] != isPos:
+            continue
+        list = train_set[i]
+        for word in list:
+            if word in word_doc:
+                continue
+            word_doc[word] += 1
+    return word_doc
+
+# toatal number of words in a doc   
+def tot_words_in_doc(train_set, train_labels, isPos):
+    words_in_doc = {} 
+    i = 0
+    for j in range(train_labels):
+        if train_labels[j] != isPos:
+            continue
+        words_in_doc[i] = len(train_set[i])
+        i += 1
+
 def num_word_in_a_doc(list, word):
     map = {}
     count = 0
@@ -30,14 +53,7 @@ def num_word_in_a_doc(list, word):
 
 def get_tfidf(train_set, train_labels):
     tf_idf_map = {}
-    total_doc = len(train_set) # total number of docs in the training set
-
-    word_doc = {} # no of docs containing the word
-    for list in train_set:
-        for word in list:
-            if word in word_doc:
-                continue
-            word_doc[word] += 1
+    total_doc = len(train_labels) # total number of docs in the training set
 
     words_in_doc = {} # toatal number of words in a doc
     i = 0
@@ -53,6 +69,7 @@ def get_tfidf(train_set, train_labels):
             w_in_doc[j] = num_word_in_a_doc(list, word)
             j += 1   
 
+    # make the tf_idf map
     for list in train_set
 
 
@@ -76,7 +93,8 @@ def compute_tf_idf(train_set, train_labels, dev_set):
 
 
     # TODO: Write your code here
-    tf_idf = get_tfidf(train_set, train_labels)
+    num_docs_w_word_pos = no_docs_with_word(train_set, train_labels, 1)
+    num_docs_w_word_neg = no_docs_with_word(train_set, train_labels, 0)
     
 
     # return list of words (should return a list, not numpy array or similar)
