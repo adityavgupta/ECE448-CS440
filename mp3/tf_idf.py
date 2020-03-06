@@ -19,6 +19,31 @@ import math
 from collections import Counter
 import time
 
+def get_tfidf(train_set, train_labels):
+
+    total_doc = len(train_set) # total number of docs in the training set
+
+    word_doc = {} # no of docs containing the word
+    for list in train_set:
+        for word in list:
+            if word in word_doc:
+                continue
+            word_doc[word] += 1
+
+    words_in_doc = {} # toatal number of words in a doc
+    i = 0
+    for list in train_set:
+        words_in_doc[i] = len(list)
+        i += 1
+
+    w_in_doc = {} # number of times a word appears in a doc
+    j = 0
+    for list in train_set:
+        for w in list:
+
+
+
+
 
 
 def compute_tf_idf(train_set, train_labels, dev_set):
@@ -41,8 +66,8 @@ def compute_tf_idf(train_set, train_labels, dev_set):
 
 
     # TODO: Write your code here
+    tf_idf = get_tfidf(train_set, train_labels)
     
-
 
     # return list of words (should return a list, not numpy array or similar)
     return []
