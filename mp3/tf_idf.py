@@ -19,29 +19,6 @@ import math
 from collections import Counter
 import time
 
-# num of docs in train set containing word w
-def no_docs_with_word (train_set, train_labels, isPos):
-    word_doc = {}
-    for i in range(len(train_labels)):
-        if train_labels[i] != isPos:
-            continue
-        list = train_set[i]
-        for word in list:
-            if word in word_doc:
-                continue
-            word_doc[word] += 1
-    return word_doc
-
-# toatal number of words in a doc
-# returns a list of the len of each doc
-def tot_words_in_doc(train_set, train_labels, isPos):
-    words_in_doc = []
-    for j in range(train_labels):
-        if train_labels[j] != isPos:
-            continue
-        words_in_doc[j] = len(train_set[j])
-
-
 def compute_tf_idf(train_set, train_labels, dev_set):
     """
     train_set - List of list of words corresponding with each movie review
@@ -58,15 +35,27 @@ def compute_tf_idf(train_set, train_labels, dev_set):
     Return: A list containing words with the highest tf-idf value from the dev_set documents
             Returned list should have same size as dev_set (one word from each dev_set document)
     """
-
-
-
     # TODO: Write your code here
-    num_docs_w_word_pos = no_docs_with_word(train_set, train_labels, 1)
-    num_docs_w_word_neg = no_docs_with_word(train_set, train_labels, 0)
+    word_doc = {}
+    for list in train_set:
+        seen = {}
+        for word in list:
+            word_doc[word] = word_doc.get(word, 0)+1 - seen.get(word, 0)
+            seen[word] = 1
 
-    for i in range(len(train_labels)):
-    
-
+    res = []
+    for list in dev_set:
+        tot_words = len(list)
+        num_word_in_doc = {}
+        for word in list:
+            num_word_in_doc[word] = num_word_in_doc.get(word, 0)+1
+        h = None
+        w = None
+        for word in num_word_in_doc:
+            tfidf = (num_word_in_doc[word]/tot_words)* np.log(len(train_set)/(1+word_doc.get(word, 0)))
+            if h == None or h < tfidf:
+                h = tfidf
+                w = word
+        res.append(w)
     # return list of words (should return a list, not numpy array or similar)
-    return []
+    return res
