@@ -40,7 +40,11 @@ def compute_tf_idf(train_set, train_labels, dev_set):
     for list in train_set:
         seen = {}
         for word in list:
-            word_doc[word] = word_doc.get(word, 0)+1 - seen.get(word, 0)
+            if word in seen:
+                word_doc[word] = word_doc.get(word, 0)+1 - seen[word]
+            else:
+                word_doc[word] = word_doc.get(word, 0)+1
+            
             seen[word] = 1
 
     res = []
