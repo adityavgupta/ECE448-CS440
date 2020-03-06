@@ -79,11 +79,11 @@ def naiveBayes(train_set, train_labels, dev_set, smoothing_parameter, pos_prior)
     #print()
     return dev_labels
 
-def getWordCountMap(train_set, train_labels, isNeg):
+def getWordCountMap(train_set, train_labels, isPos):
     word_count = {}
 
     for i in range(len(train_labels)):
-        if (train_labels[i] != isNeg):
+        if (train_labels[i] != isPos):
             continue
         cur = train_set[i]
 

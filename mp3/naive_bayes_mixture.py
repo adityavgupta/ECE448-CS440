@@ -19,11 +19,11 @@ import numpy as np
 import math
 from collections import Counter
 
-def getWordCountMap(train_set, train_labels, isNeg):
+def getWordCountMap(train_set, train_labels, isPos):
     word_count = {}
 
     for i in range(len(train_labels)):
-        if (train_labels[i] != isNeg):
+        if (train_labels[i] != isPos):
             continue
         cur = train_set[i]
 
@@ -35,10 +35,10 @@ def getWordCountMap(train_set, train_labels, isNeg):
 
     return word_count
 
-def getBigramMap(train_set, train_labels, isNeg):
+def getBigramMap(train_set, train_labels, isPos):
     bigram_map = {}
     for i in range(len(train_labels)):
-        if train_labels[i] != isNeg:
+        if train_labels[i] != isPos:
             continue
         cur = train_set[i]
         for j in range(len(cur)-1):
@@ -64,7 +64,7 @@ def makeProbs (bg_map, smoothing_parameter):
         prob = (bg_map[bg] + smoothing_parameter)/(tot_bg + smoothing_parameter*(tot_types))
         probmap[bg] = prob
 
-    return probmap, u_prob 
+    return probmap, u_prob
 
 
 def naiveBayesMixture(train_set, train_labels, dev_set, bigram_lambda,unigram_smoothing_parameter, bigram_smoothing_parameter, pos_prior):
