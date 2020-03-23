@@ -1,0 +1,23 @@
+
+    New Tagset for CS 440 assignment
+
+ADJ adjective
+ADV adverb
+IN preposition
+PART particle (e.g. after verb, looks like a preposition)
+
+PRON pronoun
+NUM number
+CONJ conjunction
+UH filler, exclamation
+
+TO infinitive
+VERB verb
+MODAL modal verb
+DET determiner
+
+NOUN noun
+PERIOD end of sentence punctuation
+PUNCT  other punctuation
+X miscellaneous hard-to-classify items
+
