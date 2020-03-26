@@ -22,11 +22,10 @@ def baseline(train, test):
     for sentence in train:
         for w_tag in sentence:
             w, t = w_tag
-
             if w not in word_tag:
                 word_tag[w] = Counter()
+                
             word_tag[w][t] += 1
-
             tag_ct[t] += 1
 
     t_max = max(tag_ct.keys(), key=(lambda key: tag_ct[key]))
