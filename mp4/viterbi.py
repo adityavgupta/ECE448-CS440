@@ -24,7 +24,7 @@ def baseline(train, test):
             w, t = w_tag
             if w not in word_tag:
                 word_tag[w] = Counter()
-                
+ 
             word_tag[w][t] += 1
             tag_ct[t] += 1
 
@@ -55,7 +55,60 @@ def viterbi_p1(train, test):
     '''
 
     predicts = []
-    raise Exception("You must implement me")
+    word_tag = {}       # a dict of the form {word:{tag:count of this tag}}
+    tag_ct = Counter()  # a dict of the form {tag:its count}
+    tag_idx = {}        # a dict of the form {tag: its index in the tag_ct dict}
+    idx = 0
+
+    # build the wird_tag and tag_ct dicts
+    for sentence in train:
+        for w_tag in sentence:
+            w, t = w_tag
+            if w not in word_tag:
+                word_tag[w] = Counter()
+
+            word_tag[w][t] += 1
+            tag_ct += 1
+
+    # make the tag_idx map 
+    for t in tag_ct.keys():
+        tag_idx[tag] = idx
+        idx += 1
+
+    k = 0.00001
+    # emission prob
+    for k in word_tag.keys():
+        for t in word_tag[key].keys():
+            word_tag[k][t] = (k+word_tag[k][t])/(tag_ct[t] + k*len(tag_ct))
+
+    init_tag_probs = np.zeros(idx)
+    trans_probs_table = np.zeros(shape=(idx, idx))
+
+    for sentence in train:
+        first = True
+        for i in range(len(sentence)-1):
+            w, t = sentence[i]
+            curr_t_i = tag_idx[t]
+
+            if first:
+                init_tag_probs[curr_t_i] += 1
+                first = False
+
+            next_t = sentence[i+1][1]
+            trans_probs_table[curr_t_i][tag_idx[next_t]] += 1
+
+    # initial prob
+    for itp in init_tag_probs:
+        itp = (itp+k)/(len(train)+k*len(tag_ct))
+
+    # laplace smoothing
+    for t_ct in tag_ct:
+        t, ct = t_ct
+        prev_idx = tag_idx[t]
+        for i in range(len(trans_probs_table)):
+            trans_probs_table[prev_idx][i] = (trans_probs_table[prev_idx][i] + k)/(ct + k*len(tag_ct)) 
+
+
     return predicts
 
 def viterbi_p2(train, test):
