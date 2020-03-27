@@ -99,7 +99,7 @@ def helper(sentence,matrix, back_ptr, initial_prob, ip_uk, transition_prob, tp_u
             b = emission_prob[(sentence[0], key)]
         else:
             b = ep_uk
-        matrix[0][b] = pi+b
+        matrix[0][key] = pi+b
     for i in range(1, len(matrix)):
         for k in matrix[i].keys():
             max_prob = -inf
@@ -126,7 +126,7 @@ def helper(sentence,matrix, back_ptr, initial_prob, ip_uk, transition_prob, tp_u
     return_s = []
     while key_ != None and index>=0:
         return_s = [(sentence[index], key_)]+return_s
-        key = back_ptr[index][key_]
+        key_ = back_ptr[index][key_]
         index -= 1
     return return_s
 
@@ -206,6 +206,7 @@ def viterbi_p1(train, test):
         matrix = make_matrix(s, tags)
         back_ptr = make_b_ptr(s, tags)
         estimated_test[i] = helper(s,matrix, back_ptr, initial_prob, ip_uk, transition_prob, tp_uk, emission_prob, ep_uk)
+        i += 1
 
     predicts = []
     predicts = estimated_test
