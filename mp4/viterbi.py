@@ -6,6 +6,7 @@ files and classes when code is run, so be careful to not modify anything else.
 import numpy as np
 from collections import Counter
 from math import log
+from math import inf
 
 def baseline(train, test):
     '''
@@ -43,9 +44,9 @@ def baseline(train, test):
 
     return predicts
 
-def make_trellis(sentence, tags, init_prob, ip_uk, trans_prob, trans_prob_uk, emission_prob, emission_prob_uk):
+'''def make_trellis(sentence, tags, init_prob, ip_uk, trans_prob, trans_prob_uk, emission_prob, emission_prob_uk):
     tags = list(tags)
-    ts = [{t:(init_prob.get(t, ip_uk) + emission_prob.get(sentence[0], emission_prob_uk[t])) for t in tags}]
+    ts = [{t:(init_prob.get(t, ip_uk) + emission_prob[t].get(sentence[0], emission_prob_uk[t])) for t in tags}]
 
     back_ptr = {}
     i = 0
@@ -58,13 +59,76 @@ def make_trellis(sentence, tags, init_prob, ip_uk, trans_prob, trans_prob_uk, em
             temp[tag_curr] = ts[-1][tag_prev]+trans_prob[tag_prev].get(tag_prev, trans_prob_uk[tag_prev])+emission_prob[tag_curr].get(word, emission_prob_uk[tag_curr])
             back_ptr[(tag_curr, i)] = (tag_prev, i-1)
 
-            for tag_prev in tags:
-                tptc = ts[-1].get(tag_prev, ip_uk) + trans_prob[tag_prev].get(tag_curr, trans_prob_uk[tag_prev])+emission_prob[tag_curr].get(word, emission_prob_uk[tag_curr])
+            for tag__prev in tags:
+                tptc = ts[-1].get(tag__prev, ip_uk) + trans_prob[tag__prev].get(tag_curr, trans_prob_uk[tag__prev])+emission_prob[tag_curr].get(word, emission_prob_uk[tag_curr])
                 if temp[tag_curr] < tptc:
                     temp[tag_curr] = tptc
                     back_ptr[(tag_curr, i)] = (tag_prev, i-1)
         ts.append(temp)
-    return ts, i, back_ptr
+    ts_max = max(ts[-1].items(), key=(lambda x: x[1]))
+    p = []
+    c = (ts_max[0], i)t
+    while c[1] >= 0:
+        p.append(c[0])
+        c = back_ptr.get(c, (-1, -1))
+    p = list(reversed(p))
+    return p'''
+
+def make_matrix(sentence, tags):
+    #matrix = [{tag:0 for tag in tags} for i in range(len(sentence))]
+    matrix = []
+    for i in range(len(sentence)):
+        matrix.append({tag:0 for tag in tags})
+    return matrix
+
+def make_b_ptr(sentence, tags):
+    back_ptr=[];
+    for i in range(len(sentence)):
+        back_ptr.append({tag:None for tag in list(tags)})
+    return back_ptr
+
+def helper(sentence,matrix, back_ptr, initial_prob, ip_uk, transition_prob, tp_uk, emission_prob, ep_uk):
+    for key, value in matrix[0].items():
+        pi = 0
+        b = 0
+        if key in initial_prob:
+            pi = initial_prob[key]
+        else:
+            pi=ip_uk
+        if (sentence[0], key) in emission_prob:
+            b = emission_prob[(sentence[0], key)]
+        else:
+            b = ep_uk
+        matrix[0][b] = pi+b
+    for i in range(1, len(matrix)):
+        for k in matrix[i].keys():
+            max_prob = -inf
+            max_key = ""
+            b=0
+            if (sentence[i], k) in emission_prob:
+                b = emission_prob[(sentence[i], k)]
+            else:
+                b= ep_uk
+            for k_prime in matrix[i-1].keys():
+                a = 0
+                if (k_prime, k) in transition_prob:
+                    a = transition_prob[(k_prime, k)]
+                else:
+                    a = tp_uk
+
+                if (a+b+matrix[i-1][k_prime]) > max_prob:
+                    max_prob = a+b+matrix[i-1][k_prime]
+                    max_key = k_prime
+            matrix[i][k] = max_prob
+            back_ptr[i][k] = max_key
+    index = len(matrix)-1
+    key_ = max(matrix[index], key=matrix[index].get)
+    return_s = []
+    while key_ != None and index>=0:
+        return_s = [(sentence[index], key_)]+return_s
+        key = back_ptr[index][key_]
+        index -= 1
+    return return_s
 
 
 def viterbi_p1(train, test):
@@ -77,77 +141,75 @@ def viterbi_p1(train, test):
     output: list of sentences with tags on the words
             E.g. [[(word1, tag1), (word2, tag2)...], [(word1, tag1), (word2, tag2)...]...]
     '''
-    k = 0.00001
+    k = 0.0001
 
-    init_tag_ct = Counter()
-
-    prev_to_tag = {}
-
-    prev_tag_ct = Counter()
-
-    tag_ct = Counter()
-    tag_word = {}
-
-    tags = set()
+    # make the sets of unique words and tags
     words = set()
-
-    for sentence in train:
-        for i in range(len(sentence)):
-            w, t = sentence[i]
-            # first word
-            if i == 0:
-                init_tag_ct[t] += 1
-            else:
-                prev_word, prev_tag = sentence[i-1]
-
-                # prev->cur+1
-                if prev_tag not in prev_to_tag:
-                    prev_to_tag[prev_tag] = Counter()
-                prev_to_tag[prev_tag][t] += 1
-
-                # prev+1
-                prev_tag_ct[prev_tag] += 1
-            # (w, t) + 1
-            if t not in tag_word:
-                tag_word[t] = Counter()
-            tag_word[t][w] += 1
-
-            # t+1
-            tag_ct[t] += 1
-
+    tags = set()
+    for s in train:
+        for pair in s:
+            w,t = pair
             words.add(w)
             tags.add(t)
 
     # initial prob
-    init_prob = {}
-    for (tag,count) in init_tag_ct.items():
-        init_prob[tag] = (count+k)/(len(train) + k*len(tags))
-    # unkown initial prob
+    init_tag_ct = Counter()
+    for sentence in train:
+        init_tag_ct[sentence[0][1]] += 1
+    initial_prob = dict(init_tag_ct)
+
+    for (t, c) in initial_prob.items():
+        initial_prob[t] = log((c+k)/(len(train) + k*len(tags)))
     ip_uk = log(k/(len(train) + k*len(tags)))
 
     # transition prob
-    trans_prob = {}
-    for (pt, tag_count) in prev_to_tag.items():
-        temp = {}
-        for (tc, ct) in tag_count.items():
-            temp[tc] = log((ct + k)/(prev_tag_ct[pt] + k*len(tags)))
-        trans_prob[pt] = temp
-    # unknown transition prob
-    trans_prob_uk = {}
-    for pt in list(tags):
-        trans_prob_uk[pt] = log(k/(prev_tag_ct.get(pt, 0)+ k*len(tags)))
+    transition = []
+    for s in train:
+        for i in range(1, len(s)):
+            curr_t = s[i][1]
+            prev_t = s[i-1][1]
+            transition.append((prev_t, curr_t))
+    transition_prob = dict(Counter(transition))
+    #tp_uk = dict()
+    for tag_1 in list(tags):
+        denominator = 0
+        for tag in list(tags):
+            if (tag_1, tag) in transition_prob:
+                denominator += transition_prob[(tag_1, tag)]
+        for tag in list(tags):
+            if (tag_1, tag) in transition_prob:
+                transition_prob[(tag_1, tag)] = log((transition_prob[(tag_1,tag)]+k)/(denominator+k*len(tags)))
+            else:
+                transition_prob[(tag_1, tag)] = log(k/(len(train)+k*len(tags))) #migh need to change the len used in denominator
+    tp_uk = log(k/(len(train)+k*len(tags)))
 
     # emission prob
-    emission_prob = {}
-    for (tag,tt) in tag_word.items():
-        temp = {}
-        for (word,count) in tt.items():
-            temp[word] = log((k + count)/(tag_ct[t] + k*(1+len(words))))
-            emission_prob[tag] = temp
-    # unknown emission prob
-    emission_prob_uk = {}
+    emission_prob = Counter()
+    tag_ct = Counter()
+    for s in train:
+        for wt_pair in s:
+            emission_prob[wt_pair] += 1
+            tag_ct[wt_pair[1]] += 1
+    emission_prob = dict(emission_prob)
+
     for tag in list(tags):
-        emission_prob_uk[tag] = log(k/(tag_ct.get(tag, 0) + k*(1+len(words))))
+        for word in list(words):
+            if (word, tag) in emission_prob:
+                emission_prob[(word, tag)]=log((emission_prob[(word,tag)]+k)/(tag_ct[tag]+k*(len(words)+1)))
+            else:
+                emission_prob[(word, tag)] = log(k/(len(train)+k*(len(words)+1)))
+    ep_uk = log(k/(len(train)+k*(len(words)+1)))
+
+    estimated_test = [[] for i in range(len(test))]
+    i = 0
+    for s in test:
+        matrix = make_matrix(s, tags)
+        back_ptr = make_b_ptr(s, tags)
+        estimated_test[i] = helper(s,matrix, back_ptr, initial_prob, ip_uk, transition_prob, tp_uk, emission_prob, ep_uk)
+
+    predicts = []
+    predicts = estimated_test
+    return predicts
 
     # build the trellis
 
@@ -157,19 +219,6 @@ def viterbi_p1(train, test):
     #    back_ptr = make_b_ptr(s, tags)
     #    estimated_test[i] = viterbi_helper(s, mat, back_ptr, init_prob, ip_uk, trans_prob, trans_prob_uk, emission_prob, emission_prob_uk)
     #predicts = estimated_test
-
-    for sentence in test:
-        trellis, i, back_ptr = make_trellis(sentence, tags, init_prob, ip_uk, trans_prob, trans_prob_uk, emission_prob, emission_prob_uk)
-        ts_max = max(trellis[-1].items(), key=(lambda x: x[1]))
-        p = []
-        c = (ts_max[0], i)
-        while i >= 0:
-            p.append(ts_max[0])
-            c = back_ptr.get(c, (-1, -1))
-
-        p = list(reversed(predicts))
-        predicts.append(list(zip(sentence, p)))
-    return predicts
 
 def viterbi_p2(train, test):
     '''
