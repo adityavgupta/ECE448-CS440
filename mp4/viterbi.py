@@ -237,13 +237,14 @@ def hapax(train, tags, alpha):
     hap_tags = dict(hap_tags)
     sum_ = sum(hap_tags.values())
    
+    #hap_tags = {k: (v+alpha)/(sum_ + alpha*len(tags)) for k,v in }
+    for k,v in hap_tags.items():
+        hap_tags[k] = (v+alpha)/(sum_ + alpha*len(tags))
     #hap_tags = {tag:alpha/(sum_+len(tags)*alpha) for tag in tags if tag not in hap_tags}
     for tag in tags:
         if tag not in hap_tags:
             hap_tags[tag] = alpha/(sum_+len(tags)*alpha)
-    #hap_tags = {k: (v+alpha)/(sum_ + alpha*len(tags)) for k,v in }
-    for k,v in hap_tags.items():
-        hap_tags[k] = (v+alpha)/(sum_ + alpha*len(tags))
+    
     return hap_tags
 
 
