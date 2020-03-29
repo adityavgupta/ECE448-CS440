@@ -44,35 +44,6 @@ def baseline(train, test):
 
     return predicts
 
-'''def make_trellis(sentence, tags, init_prob, ip_uk, trans_prob, trans_prob_uk, emission_prob, emission_prob_uk):
-    tags = list(tags)
-    ts = [{t:(init_prob.get(t, ip_uk) + emission_prob[t].get(sentence[0], emission_prob_uk[t])) for t in tags}]
-
-    back_ptr = {}
-    i = 0
-    for word in sentence[1:]:
-        temp = {}
-        i += 1
-
-        for tag_curr in tags:
-            tag_prev = tags[0]
-            temp[tag_curr] = ts[-1][tag_prev]+trans_prob[tag_prev].get(tag_prev, trans_prob_uk[tag_prev])+emission_prob[tag_curr].get(word, emission_prob_uk[tag_curr])
-            back_ptr[(tag_curr, i)] = (tag_prev, i-1)
-
-            for tag__prev in tags:
-                tptc = ts[-1].get(tag__prev, ip_uk) + trans_prob[tag__prev].get(tag_curr, trans_prob_uk[tag__prev])+emission_prob[tag_curr].get(word, emission_prob_uk[tag_curr])
-                if temp[tag_curr] < tptc:
-                    temp[tag_curr] = tptc
-                    back_ptr[(tag_curr, i)] = (tag_prev, i-1)
-        ts.append(temp)
-    ts_max = max(ts[-1].items(), key=(lambda x: x[1]))
-    p = []
-    c = (ts_max[0], i)t
-    while c[1] >= 0:
-        p.append(c[0])
-        c = back_ptr.get(c, (-1, -1))
-    p = list(reversed(p))
-    return p'''
 
 def make_matrix(sentence, tags):
     #matrix = [{tag:0 for tag in tags} for i in range(len(sentence))]
@@ -120,7 +91,10 @@ def helper(sentence,matrix, back_ptr, initial_prob, ip_uk, transition_prob, tp_u
                 if (k_prime, k) in transition_prob:
                     a = transition_prob[(k_prime, k)]
                 else:
-                    a = tp_uk
+                    if isDict == 0:
+                        a = tp_uk
+                    else:
+                        a = tp_uk[k_prime]
 
                 if (a+b+matrix[i-1][k_prime]) > max_prob:
                     max_prob = a+b+matrix[i-1][k_prime]
@@ -220,7 +194,7 @@ def viterbi_p1(train, test):
 
 # part 2 hapax
 def hapax(train, tags, alpha):
-    
+    '''
     wt_ctr = Counter()
     for s in train:
         for pair in s:
@@ -237,14 +211,12 @@ def hapax(train, tags, alpha):
     hap_tags = dict(hap_tags)
     sum_ = sum(hap_tags.values())
 
-    #hap_tags = {k: (v+alpha)/(sum_ + alpha*len(tags)) for k,v in }
-    for k,v in hap_tags.items():
-        hap_tags[k] = (v+alpha)/(sum_ + alpha*len(tags))
-   
-    #hap_tags = {tag:alpha/(sum_+len(tags)*alpha) for tag in tags if tag not in hap_tags}
     for tag in tags:
         if tag not in hap_tags:
             hap_tags[tag] = alpha/(sum_+len(tags)*alpha)
+
+    for k,v in hap_tags.items():
+        hap_tags[k] = (v+alpha)/(sum_ + alpha*len(tags))
     
     return hap_tags
     '''
@@ -262,7 +234,7 @@ def hapax(train, tags, alpha):
 
     h = {t:(sum(twc[t].get(w, 0) for w in hapax) + alpha)/(len(hapax) + alpha*len(tags)) for t in list(tags)}
     return h
-    '''
+    
 
 def viterbi_p2(train, test):
     '''
@@ -296,24 +268,27 @@ def viterbi_p2(train, test):
 
     # transition prob
     transition_prob = dict()
+    pct = dict()
     for s in train:
         for i in range(0, len(s)):
             curr_t = s[i][1]
             prev_t = s[i-1][1]
+            pct[prev_t] = pct.get(prev_t,0) + 1
             transition_prob[(prev_t, curr_t)] = transition_prob.get((prev_t, curr_t), 0) + 1
     #transition_prob = dict(Counter(transition))
     #tp_uk = dict()
     for tag_1 in list(tags):
-        denominator = 0
+        #denominator = 0
+        #for tag in list(tags):
+        #    if (tag_1, tag) in transition_prob:
+        #        denominator += transition_prob[(tag_1, tag)]
         for tag in list(tags):
             if (tag_1, tag) in transition_prob:
-                denominator += transition_prob[(tag_1, tag)]
-        for tag in list(tags):
-            if (tag_1, tag) in transition_prob:
-                transition_prob[(tag_1, tag)] = log((transition_prob[(tag_1,tag)]+k)/(denominator+k*len(tags)))
-            else:
-                transition_prob[(tag_1, tag)] = log(k/(tot_pairs+k*len(tags))) #might need to change the len used in denominator
-    tp_uk = log(k/(tot_pairs+k*(len(tags)+1)))
+                transition_prob[(tag_1, tag)] = log((transition_prob[(tag_1,tag)]+k)/(pct[tag_1]+k*(len(tags)+1)))
+            #else:
+            #    transition_prob[(tag_1, tag)] = log(k/(tot_pairs+k*len(tags))) #might need to change the len used in denominator
+
+    tp_uk = {tp:log(k/(pct.get(tp, 0)+k*len(tags))) for tp in list(tags)}
 
     # hapax calculations
     hapax_dict = hapax(train, tags, k)
@@ -328,16 +303,16 @@ def viterbi_p2(train, test):
     emission_prob = dict(emission_prob)
 
     for tag in list(tags):
-        denominator = 0
+        #denominator = 0
         #for word in list(words):
         #    if (word, tag) in emission_prob:
         #        denominator += emission_prob[(word,tag)]
         for word in list(words):
             if (word, tag) in emission_prob:
-                emission_prob[(word, tag)]=log((emission_prob[(word,tag)]+k*hapax_dict[tag])/(tag_ct[tag]+k*(len(words)+1)*hapax_dict[tag]))
-            else:
-                emission_prob[(word, tag)] = log((k*hapax_dict[tag])/(tot_pairs+k*hapax_dict[tag]*(len(words)+1)))
-    ep_uk = {tag:log((k*hapax_dict[tag])/(tot_pairs+k*(len(words)+1))) for tag in list(tags)}
+                emission_prob[(word, tag)] = log((emission_prob[(word,tag)]+k*hapax_dict[tag])/(tag_ct[tag]+k*(len(words)+1)*hapax_dict[tag]))
+            #else:
+            #    emission_prob[(word, tag)] = log((k*hapax_dict[tag])/(tag_ct[tag]+k*hapax_dict[tag]*(len(words)+1)))
+    ep_uk = {tag:log((k*hapax_dict[tag])/(tag_ct.get(tag,0)+ k*hapax_dict[tag]*(len(words)+1))) for tag in list(tags)}
 
     estimated_test = [[] for i in range(len(test))]
     i= 0
