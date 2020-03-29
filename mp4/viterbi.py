@@ -128,7 +128,7 @@ def helper(sentence,matrix, back_ptr, initial_prob, ip_uk, transition_prob, tp_u
             matrix[i][k] = max_prob
             back_ptr[i][k] = max_key
     index = len(matrix)-1
-    key_ = max(matrix[index], key=matrix[index].get)
+    key_ = max(matrix[index], key=lambda key: matrix[index][key])
     return_s = []
     while key_ != None and index>=0:
         return_s = [(sentence[index], key_)]+return_s
@@ -236,17 +236,33 @@ def hapax(train, tags, alpha):
                 hap_tags[pair[1]] += 1
     hap_tags = dict(hap_tags)
     sum_ = sum(hap_tags.values())
-   
+
     #hap_tags = {k: (v+alpha)/(sum_ + alpha*len(tags)) for k,v in }
     for k,v in hap_tags.items():
         hap_tags[k] = (v+alpha)/(sum_ + alpha*len(tags))
+   
     #hap_tags = {tag:alpha/(sum_+len(tags)*alpha) for tag in tags if tag not in hap_tags}
     for tag in tags:
         if tag not in hap_tags:
             hap_tags[tag] = alpha/(sum_+len(tags)*alpha)
     
     return hap_tags
+    '''
+    wc = dict()
+    twc = dict()
+    for s in train:
+        for p in s:
+            w, t = p
+            wc[w] = wc.get(w, 0) + 1
 
+            if not t in twc:
+                twc[t] = dict()
+            twc[t][w] = twc[t].get(w, 0) + 1
+    hapax = list(map(lambda x : x[0], filter(lambda x : x[1] == 1, wc.items())))
+
+    h = {t:(sum(twc[t].get(w, 0) for w in hapax) + alpha)/(len(hapax) + alpha*len(tags)) for t in list(tags)}
+    return h
+    '''
 
 def viterbi_p2(train, test):
     '''
@@ -258,7 +274,7 @@ def viterbi_p2(train, test):
     output: list of sentences with tags on the words
             E.g. [[(word1, tag1), (word2, tag2)...], [(word1, tag1), (word2, tag2)...]...]
     '''
-    k = 10**(-5)
+    k = 10**(-4)
 
     # make the sets of unique words and tags
     tot_pairs = 0
@@ -272,23 +288,20 @@ def viterbi_p2(train, test):
             tags.add(t)
 
     # initial prob
-    init_tag_ct = Counter()
+    init_tag_ct = dict()
     for sentence in train:
-        init_tag_ct[sentence[0][1]] += 1
-    initial_prob = dict(init_tag_ct)
-
-    for (t, c) in initial_prob.items():
-        initial_prob[t] = log((c+k)/(len(train) + k*len(tags)))
+        init_tag_ct[sentence[0][1]] = init_tag_ct.get(sentence[0][1], 0) + 1
+    initial_prob = {t: log((c+k)/(len(train) + k*len(tags))) for (t, c) in init_tag_ct.items()}
     ip_uk = log(k/(len(train) + k*len(tags)))
 
     # transition prob
-    transition = []
+    transition_prob = dict()
     for s in train:
-        for i in range(1, len(s)):
+        for i in range(0, len(s)):
             curr_t = s[i][1]
             prev_t = s[i-1][1]
-            transition.append((prev_t, curr_t))
-    transition_prob = dict(Counter(transition))
+            transition_prob[(prev_t, curr_t)] = transition_prob.get((prev_t, curr_t), 0) + 1
+    #transition_prob = dict(Counter(transition))
     #tp_uk = dict()
     for tag_1 in list(tags):
         denominator = 0
@@ -297,9 +310,9 @@ def viterbi_p2(train, test):
                 denominator += transition_prob[(tag_1, tag)]
         for tag in list(tags):
             if (tag_1, tag) in transition_prob:
-                transition_prob[(tag_1, tag)] = log((transition_prob[(tag_1,tag)]+k)/(denominator+k*(len(tags)+1)))
+                transition_prob[(tag_1, tag)] = log((transition_prob[(tag_1,tag)]+k)/(denominator+k*len(tags)))
             else:
-                transition_prob[(tag_1, tag)] = log(k/(tot_pairs+k*(len(tags)+1))) #might need to change the len used in denominator
+                transition_prob[(tag_1, tag)] = log(k/(tot_pairs+k*len(tags))) #might need to change the len used in denominator
     tp_uk = log(k/(tot_pairs+k*(len(tags)+1)))
 
     # hapax calculations
@@ -316,15 +329,15 @@ def viterbi_p2(train, test):
 
     for tag in list(tags):
         denominator = 0
+        #for word in list(words):
+        #    if (word, tag) in emission_prob:
+        #        denominator += emission_prob[(word,tag)]
         for word in list(words):
             if (word, tag) in emission_prob:
-                denominator += emission_prob[(word,tag)]
-        for word in list(words):
-            if (word, tag) in emission_prob:
-                emission_prob[(word, tag)]=log((emission_prob[(word,tag)]+k*hapax_dict[tag])/(denominator+k*(len(words)+1)*hapax_dict[tag]))
+                emission_prob[(word, tag)]=log((emission_prob[(word,tag)]+k*hapax_dict[tag])/(tag_ct[tag]+k*(len(words)+1)*hapax_dict[tag]))
             else:
-                emission_prob[(word, tag)] = log((k*hapax_dict[tag])/(tag_ct[tag]+k*hapax_dict[tag]*(len(words)+1)))
-    ep_uk = {tag:log((k*hapax_dict[tag])/(tag_ct[tag]+k*hapax_dict[tag]*(len(words)+1))) for tag in list(tags)}
+                emission_prob[(word, tag)] = log((k*hapax_dict[tag])/(tot_pairs+k*hapax_dict[tag]*(len(words)+1)))
+    ep_uk = {tag:log((k*hapax_dict[tag])/(tot_pairs+k*(len(words)+1))) for tag in list(tags)}
 
     estimated_test = [[] for i in range(len(test))]
     i= 0
