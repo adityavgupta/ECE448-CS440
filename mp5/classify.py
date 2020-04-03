@@ -8,6 +8,8 @@
 # Created by Justin Lizama (jlizama2@illinois.edu) on 10/27/2018
 # Extended by Daniel Gonzales (dsgonza2@illinois.edu) on 3/11/2020
 
+import numpy as np
+import time
 """
 This is the main entry point for MP5. You should only modify code
 within this file -- the unrevised staff files will be used for all other
@@ -31,13 +33,30 @@ dev_set - A Numpy array of 32x32x3 images of shape [2500, 3072].
 
 def trainPerceptron(train_set, train_labels, learning_rate, max_iter):
     # TODO: Write your code here
-    # return the trained weight and bias parameters 
-    return W, b
+    # return the trained weight and bias parameters
+    weights = np.zeros(len(train_set[0])+1)
+    for epoch in range(max_iter):
+        for features, label in zip(train_set, train_labels):
+            prediction = 1 if (np.dot(features, weights[1:])+weights[0]) > 0 else 0
+            weights[1:] += learning_rate*(label - prediction)*features
+            weights[0] += learning_rate*(label - prediction)*1
+
+    w = weights[1:]
+    b = weights[0]
+    return w, b
 
 def classifyPerceptron(train_set, train_labels, dev_set, learning_rate, max_iter):
     # TODO: Write your code here
     # Train perceptron model and return predicted labels of development set
-    return []
+    st = time.time()
+    trained_weight, trained_bias = trainPerceptron(train_set, train_labels, learning_rate, max_iter)
+    dev_label = []
+    for img in dev_set:
+        pred_res = 1 if (np.dot(img, trained_weight)+trained_bias) > 0 else 0
+        dev_label.append(pred_res)
+    print("time taken = %s seconds" % (time.time()-st))
+    print(trained_weight.size)
+    return dev_label
 
 def sigmoid(x):
     # TODO: Write your code here
