@@ -67,17 +67,12 @@ def sigmoid(x):
 def trainLR(train_set, train_labels, learning_rate, max_iter):
     # TODO: Write your code here
     # return the trained weight and bias parameters
-    #weights = np.zeros(len(train_set[0])+1)
+
+    # 
     weights = np.zeros(len(train_set[0]))
     b = 0
     for epoch in range(max_iter):
-        #for features, label in zip(train_set, train_labels):
-        #    prediction = sigmoid(np.dot(features, weights[1:])+weights[0])
-        #    gradient = np.dot(np.transpose(features), (prediction-label))/train_labels.size
-        #    weights[1:] -= learning_rate*gradient #update weights
-            #print(gradient)
-            #weights[0] -= learning_rate*gradient #update bias
-        prediction = sigmoid(np.dot(train_set, weights))
+        prediction = sigmoid(np.dot(train_set, weights)+b)
         gradient = np.dot(np.transpose(train_set),(prediction-train_labels))/train_labels.size
         weights -= learning_rate*gradient
         b -= learning_rate*np.sum(prediction-train_labels)/train_labels.size
