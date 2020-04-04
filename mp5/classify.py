@@ -80,10 +80,9 @@ def trainLR(train_set, train_labels, learning_rate, max_iter):
         prediction = sigmoid(np.dot(train_set, weights))
         gradient = np.dot(np.transpose(train_set),(prediction-train_labels))/train_labels.size
         weights -= learning_rate*gradient
-        b -= (prediction-train_labels)/train_labels.size
+        b -= learning_rate*(prediction-train_labels)/train_labels.size
 
     W = weights
-
     return W, b
 
 def classifyLR(train_set, train_labels, dev_set, learning_rate, max_iter):
