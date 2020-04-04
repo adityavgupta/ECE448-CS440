@@ -61,17 +61,35 @@ def classifyPerceptron(train_set, train_labels, dev_set, learning_rate, max_iter
 def sigmoid(x):
     # TODO: Write your code here
     # return output of sigmoid function given input x
+    s = 1/(1+np.exp(-x))
     return s
 
 def trainLR(train_set, train_labels, learning_rate, max_iter):
     # TODO: Write your code here
-    # return the trained weight and bias parameters 
+    # return the trained weight and bias parameters
+    weights = np.zeros(len(train_set[0])+1)
+    for epoch in range(max_iter):
+        for features, label in zip(train_set, train_labels):
+            prediction = sigmoid(np.dot(features, weights[1:])+weights[0])
+            gradient = np.dot(np.transpose(features), (prediction-label))/train_labels.size
+            weights[1:] -= learning_rate*gradient
+            #print(gradient)
+            weights[0] -= learning_rate*gradient[0]
+
+    W = weights[1:]
+    b = weights[0]
+
     return W, b
 
 def classifyLR(train_set, train_labels, dev_set, learning_rate, max_iter):
     # TODO: Write your code here
     # Train LR model and return predicted labels of development set
-    return []
+    tw, tb = trainLR(train_set, train_labels, learning_rate, max_iter)
+    dev_label = []
+    for img in dev_set:
+        pred_res = 1 if sigmoid(np.dot(img, tw)+tb) >= 0.5 else 0
+        dev_label.append(pred_res)
+    return dev_label
 
 def classifyEC(train_set, train_labels, dev_set, k):
     # Write your code here if you would like to attempt the extra credit
