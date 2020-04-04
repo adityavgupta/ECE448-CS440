@@ -67,17 +67,22 @@ def sigmoid(x):
 def trainLR(train_set, train_labels, learning_rate, max_iter):
     # TODO: Write your code here
     # return the trained weight and bias parameters
-    weights = np.zeros(len(train_set[0])+1)
+    #weights = np.zeros(len(train_set[0])+1)
+    weights = np.zeros(len(train_set[0]))
+    b = 0
     for epoch in range(max_iter):
-        for features, label in zip(train_set, train_labels):
-            prediction = sigmoid(np.dot(features, weights[1:])+weights[0])
-            gradient = np.dot(np.transpose(features), (prediction-label))/train_labels.size
-            weights[1:] -= learning_rate*gradient
+        #for features, label in zip(train_set, train_labels):
+        #    prediction = sigmoid(np.dot(features, weights[1:])+weights[0])
+        #    gradient = np.dot(np.transpose(features), (prediction-label))/train_labels.size
+        #    weights[1:] -= learning_rate*gradient #update weights
             #print(gradient)
-            weights[0] -= learning_rate*gradient[0]
+            #weights[0] -= learning_rate*gradient #update bias
+        prediction = sigmoid(np.dot(train_set, weights))
+        gradient = np.dot(np.transpose(train_set),(prediction-train_labels))/train_labels.size
+        weights -= learning_rate*gradient
+        b -= (prediction-train_labels)/train_labels.size
 
-    W = weights[1:]
-    b = weights[0]
+    W = weights
 
     return W, b
 
@@ -86,8 +91,10 @@ def classifyLR(train_set, train_labels, dev_set, learning_rate, max_iter):
     # Train LR model and return predicted labels of development set
     tw, tb = trainLR(train_set, train_labels, learning_rate, max_iter)
     dev_label = []
+    i = 0
     for img in dev_set:
-        pred_res = 1 if sigmoid(np.dot(img, tw)+tb) >= 0.5 else 0
+        pred_res = 1 if sigmoid(np.dot(img, tw)+tb[i]) >= 0.5 else 0
+        i += 1
         dev_label.append(pred_res)
     return dev_label
 
