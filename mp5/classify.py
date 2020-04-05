@@ -68,7 +68,7 @@ def trainLR(train_set, train_labels, learning_rate, max_iter):
     # TODO: Write your code here
     # return the trained weight and bias parameters
 
-    # 
+    # for my gradient calculations, I used this website: https://medium.com/@martinpella/logistic-regression-from-scratch-in-python-124c5636b8ac
     weights = np.zeros(len(train_set[0]))
     b = 0
     for epoch in range(max_iter):
