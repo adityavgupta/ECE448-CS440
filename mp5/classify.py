@@ -92,6 +92,37 @@ def classifyLR(train_set, train_labels, dev_set, learning_rate, max_iter):
         dev_label.append(pred_res)
     return dev_label
 
+# calculate the euclidean distance between two vectors
+def euclideanDist(v1, v2):
+    dist = 0.0
+    for i in range(len(v1)-1):
+        dist += (v1[i] - v2[i])**2
+    return np.sqrt(dist)
+
+# locate the most similar neigbors
+def getNeighbors(train_set, test_row, num_neigbors):
+    distances = list()
+    for train_row in train_set:
+        dist = euclideanDist(test_row, train_row)
+        distances.append((train_row, dist))
+    distances.sort(key=lambda tup: tup[1])
+    neighbors = list()
+    for i in range(num_neigbors):
+        neighbors.append(distances[i][0])
+    return neighbors
+
+def predict_classification(train, test_row, num_neigbors):
+    neighbors = getNeighbors(train, test_row, num_neigbors)
+    output_values = [row[-1] for row in neighbors]
+    prediction = max(set(output_values), key=output_values.count)
+    return prediction
+
+
 def classifyEC(train_set, train_labels, dev_set, k):
     # Write your code here if you would like to attempt the extra credit
-    return []
+    predictions = list()
+    for row in dev_set:
+        output = predict_classification(train_set, row, k)
+        predictions.append(output)
+    print(predictions)
+    return predictions
