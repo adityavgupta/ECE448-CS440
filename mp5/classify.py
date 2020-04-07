@@ -94,35 +94,38 @@ def classifyLR(train_set, train_labels, dev_set, learning_rate, max_iter):
 
 # calculate the euclidean distance between two vectors
 def euclideanDist(v1, v2):
+    v1 = np.array(v1)
+    v2 = np.array(v2)
     dist = 0.0
-    for i in range(len(v1)-1):
-        dist += (v1[i] - v2[i])**2
-    return np.sqrt(dist)
+    dist = np.sum(np.linalg.norm(v1-v2))
+    return dist
 
 # locate the most similar neigbors
-def getNeighbors(train_set, test_row, num_neigbors):
+def getNeighbors(train_set,train_labels, test_row, num_neigbors):
     distances = list()
-    for train_row in train_set:
+    for train_row, train_label in zip(train_set, train_labels):
         dist = euclideanDist(test_row, train_row)
-        distances.append((train_row, dist))
+        distances.append((train_row, dist, train_label))
     distances.sort(key=lambda tup: tup[1])
-    neighbors = list()
+    neighbors = []
+    labels = []
     for i in range(num_neigbors):
         neighbors.append(distances[i][0])
-    return neighbors
+        labels.append(distances[i][2])
+    return neighbors, labels
 
-def predict_classification(train, test_row, num_neigbors):
-    neighbors = getNeighbors(train, test_row, num_neigbors)
-    output_values = [row[-1] for row in neighbors]
-    prediction = max(set(output_values), key=output_values.count)
+def predict_classification(train, train_labels, test_row, num_neigbors):
+    neighbors, labels = getNeighbors(train,train_labels, test_row, num_neigbors)
+    from statistics import mode
+    prediction = mode(labels)
     return prediction
 
 
 def classifyEC(train_set, train_labels, dev_set, k):
     # Write your code here if you would like to attempt the extra credit
     predictions = list()
-    for row in dev_set:
-        output = predict_classification(train_set, row, k)
+    for img in dev_set:
+        output = predict_classification(train_set, train_labels, img, k)
         predictions.append(output)
-    print(predictions)
+    #print(predictions)
     return predictions
