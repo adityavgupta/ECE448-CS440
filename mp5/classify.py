@@ -101,44 +101,29 @@ import heapq
 
 # mode calcualtion
 def mode(_list):
-    data = Counter(_list) 
-    return data[True] > data[False]
-    
-    #get_mode = dict(data) 
-    #mode = [k for k, v in get_mode.items() if v == max(list(data.values()))] 
-  
-    #if len(mode) == len(_list): 
-    #    get_mode = 0
-    #else: 
-    #    get_mode = mode[0]
-    #return get_mode
+    return Counter(_list).most_common(1)[0][0]
 
 # calculate the euclidean distance between two vectors
 def euclideanDist(v1, v2):
     v1 = np.array(v1)
     v2 = np.array(v2)
-    dist = 0.0
     dist = np.linalg.norm(v1-v2)
     return dist
 
 # locate the most similar neigbors
 def getNeighbors(train_set,train_labels, test_row, num_neigbors):
-    distances = []
-    for train_row, train_label in zip(train_set, train_labels):
-        dist = euclideanDist(test_row, train_row)
-        heapq.heappush(distances, (dist, train_row, train_label))
-    #distances.sort(key=lambda tup: tup[1])
-    neighbors = []
-    labels = []
-    for i in range(num_neigbors):
-        neighbors.append(distances[i][1])
-        labels.append(distances[i][2])
-    return neighbors, labels
+    distances_indices = []
+    for index, train_row in enumerate(train_set):
+        dist = euclideanDist(train_row, test_row)
+        heapq.heappush(distances_indices, (dist, index))
+    # k-nearest neighbors
+    k_neighbors = distances_indices[:num_neigbors]
+    k_labels = [train_labels[i] for distance, i in k_neighbors]
+    return k_neighbors, k_labels
 
 # predict the classification
-def predict_classification(train, train_labels, test_row, num_neigbors):
-    neighbors, labels = getNeighbors(train,train_labels, test_row, num_neigbors)
-    #print(labels)
+def predict_classification(train_set, train_labels, test_row, num_neigbors):
+    neighbors, labels = getNeighbors(train_set,train_labels, test_row, num_neigbors)
     prediction = mode(labels)
     return prediction
 
