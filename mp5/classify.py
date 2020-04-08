@@ -105,8 +105,6 @@ def mode(_list):
 
 # calculate the euclidean distance between two vectors
 def euclideanDist(v1, v2):
-    v1 = np.array(v1)
-    v2 = np.array(v2)
     dist = np.linalg.norm(v1-v2)
     return dist
 
@@ -129,9 +127,5 @@ def predict_classification(train_set, train_labels, test_row, num_neigbors):
 
 def classifyEC(train_set, train_labels, dev_set, k):
     # Write your code here if you would like to attempt the extra credit
-    predictions = list()
-    for img in dev_set:
-        output = predict_classification(train_set, train_labels, img, k)
-        predictions.append(output)
-    #print(predictions)
+    predictions = [predict_classification(train_set, train_labels, img, k) for img in dev_set]
     return predictions
