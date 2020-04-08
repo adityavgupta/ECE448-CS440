@@ -101,7 +101,8 @@ import heapq
 
 # mode calcualtion
 def mode(_list):
-    return Counter(_list).most_common(1)[0][0]
+    data = Counter(_list)
+    return data[True] > data[False]
 
 # calculate the euclidean distance between two vectors
 def euclideanDist(v1, v2):
