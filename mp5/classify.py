@@ -92,6 +92,24 @@ def classifyLR(train_set, train_labels, dev_set, learning_rate, max_iter):
         dev_label.append(pred_res)
     return dev_label
 
+#################
+#  EXTRA CREDIT #
+#################
+
+from collections import Counter
+
+# mode calcualtion
+def mode(_list):
+    data = Counter(_list) 
+    get_mode = dict(data) 
+    mode = [k for k, v in get_mode.items() if v == max(list(data.values()))] 
+  
+    if len(mode) == len(_list): 
+        get_mode = -1
+    else: 
+        get_mode = mode[0]
+    return get_mode
+
 # calculate the euclidean distance between two vectors
 def euclideanDist(v1, v2):
     v1 = np.array(v1)
@@ -114,12 +132,11 @@ def getNeighbors(train_set,train_labels, test_row, num_neigbors):
         labels.append(distances[i][2])
     return neighbors, labels
 
+# predict the classification
 def predict_classification(train, train_labels, test_row, num_neigbors):
     neighbors, labels = getNeighbors(train,train_labels, test_row, num_neigbors)
-    from statistics import mode
     prediction = mode(labels)
     return prediction
-
 
 def classifyEC(train_set, train_labels, dev_set, k):
     # Write your code here if you would like to attempt the extra credit
