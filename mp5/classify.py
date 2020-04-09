@@ -40,7 +40,6 @@ def trainPerceptron(train_set, train_labels, learning_rate, max_iter):
             prediction = 1 if (np.dot(features, weights[1:])+weights[0]) > 0 else 0
             weights[1:] += learning_rate*(label - prediction)*features
             weights[0] += learning_rate*(label - prediction)*1
-
     w = weights[1:]
     b = weights[0]
     return w, b
@@ -55,29 +54,25 @@ def classifyPerceptron(train_set, train_labels, dev_set, learning_rate, max_iter
         pred_res = 1 if (np.dot(img, trained_weight)+trained_bias) > 0 else 0
         dev_label.append(pred_res)
     print("time taken = %s seconds" % (time.time()-st))
-    print(trained_weight.size)
     return dev_label
 
 def sigmoid(x):
     # TODO: Write your code here
     # return output of sigmoid function given input x
-    s = 1/(1+np.exp(-x))
-    return s
+    return 1/(1+np.exp(-x))
 
 def trainLR(train_set, train_labels, learning_rate, max_iter):
     # TODO: Write your code here
     # return the trained weight and bias parameters
 
     # for my gradient calculations, I used this website: https://medium.com/@martinpella/logistic-regression-from-scratch-in-python-124c5636b8ac
-    weights = np.zeros(len(train_set[0]))
+    W = np.zeros(len(train_set[0]))
     b = 0
     for epoch in range(max_iter):
-        prediction = sigmoid(np.dot(train_set, weights)+b)
+        prediction = sigmoid(np.dot(train_set, W)+b)
         gradient = np.dot(np.transpose(train_set),(prediction-train_labels))/train_labels.size
-        weights -= learning_rate*gradient
+        W -= learning_rate*gradient
         b -= learning_rate*np.sum(prediction-train_labels)/train_labels.size
-
-    W = weights
     return W, b
 
 def classifyLR(train_set, train_labels, dev_set, learning_rate, max_iter):
@@ -85,10 +80,8 @@ def classifyLR(train_set, train_labels, dev_set, learning_rate, max_iter):
     # Train LR model and return predicted labels of development set
     tw, tb = trainLR(train_set, train_labels, learning_rate, max_iter)
     dev_label = []
-    #i = 0
     for img in dev_set:
         pred_res = 1 if sigmoid(np.dot(img, tw)+tb) >= 0.5 else 0
-        #i += 1
         dev_label.append(pred_res)
     return dev_label
 
@@ -115,9 +108,7 @@ def classifyEC(train_set, train_labels, dev_set, k):
             dist_label.append((train_labels[t_idx], dist))
         dist_label.sort(key= lambda tup: tup[1])
 
-        # labels of the k-nearest neighbors
-        k_labels = [i[0] for i in dist_label[:k]]
-        p = mode(k_labels)
-        predictions[d_idx] = p
-        
+        k_labels = [i[0] for i in dist_label[:k]] # labels of the k-nearest neighbors
+        predictions[d_idx] = mode(k_labels)
+
     return predictions
