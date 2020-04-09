@@ -104,29 +104,20 @@ def mode(_list):
     data = Counter(_list)
     return data[True] > data[False]
 
-# calculate the euclidean distance between two vectors
-def euclideanDist(v1, v2):
-    dist = np.linalg.norm(v1-v2)
-    return dist
-
-# locate the most similar neigbors
-def getNeighbors(train_set,train_labels, test_row, num_neigbors):
-    distances_indices = []
-    for index, train_row in enumerate(train_set):
-        dist = euclideanDist(train_row, test_row)
-        heapq.heappush(distances_indices, (dist, index))
-    # k-nearest neighbors
-    k_neighbors = distances_indices[:num_neigbors]
-    k_labels = [train_labels[i] for distance, i in k_neighbors]
-    return k_neighbors, k_labels
-
-# predict the classification
-def predict_classification(train_set, train_labels, test_row, num_neigbors):
-    neighbors, labels = getNeighbors(train_set,train_labels, test_row, num_neigbors)
-    prediction = mode(labels)
-    return prediction
-
 def classifyEC(train_set, train_labels, dev_set, k):
     # Write your code here if you would like to attempt the extra credit
-    predictions = [predict_classification(train_set, train_labels, img, k) for img in dev_set]
+    predictions = np.ones(len(dev_set))
+
+    for d_idx, d_img in enumerate(dev_set):
+        dist_label = []
+        for t_idx, t_img in enumerate(train_set):
+            dist = np.linalg.norm(t_img - d_img) # euclidean distance
+            dist_label.append((train_labels[t_idx], dist))
+        dist_label.sort(key= lambda tup: tup[1])
+
+        # labels of the k-nearest neighbors
+        k_labels = [i[0] for i in dist_label[:k]]
+        p = mode(k_labels)
+        predictions[d_idx] = p
+        
     return predictions
