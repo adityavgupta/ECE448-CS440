@@ -57,8 +57,17 @@ class NeuralNet(torch.nn.Module):
         @param y: an (N,) torch tensor
         @return L: total empirical risk (mean of losses) at this time step as a float
         """
+        optimizer = torch.optim.SGD(self.get_parameters(), lr=1e-4)
+        _input = y
+        _target = self.forward(x)
+        loss = self.loss_fn(_input, _target)
 
-        L=0.0
+        # Zero gradients, perform a backward pass, and update the weights
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        L=loss.items()
         return L
 
 def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
