@@ -85,5 +85,22 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
     @return net: A NeuralNet object
     # NOTE: This must work for arbitrary M and N
     """
+    lrate = 1e-2
+    loss_fn = torch.nn.CrossEntropyLoss()
+    in_size = 784
+    out_size = 3
+    net = NeuralNet(lrate, loss_fn, in_size, out_size)
+    losses = list()
 
+    for i in range(n_iter):
+        batch = train_set[i*batch_size:(i+1)*batch_size]
+        label_batch = train_labels[i*batch_size:(i+1)*batch_size]
+        losses.append(net.step(batch, label_batch))
+
+    #PATH = ''
+    #torch.save(net.stat_dict(), PATH)
+    yhats = np.zeros(dev_set.size[0])
+    i = 0
+    for img in dev_set:
+        yhats[i] = np.argmax(img)
     return losses,yhats, net
