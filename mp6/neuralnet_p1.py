@@ -31,13 +31,14 @@ class NeuralNet(torch.nn.Module):
         """
         super(NeuralNet, self).__init__()
         self.loss_fn = loss_fn
+        self.net = torch.nn.Sequential(torch.nn.Linear(in_size, 128), torch.nn.ReLU(), torch.nn.Linear(128, out_size))
 
     def get_parameters(self):
         """ Get the parameters of your network
         @return params: a list of tensors containing all parameters of the network
         """
-        # return self.net.parameters()
-        return []
+        return self.net.parameters()
+        #return []
 
 
     def forward(self, x):
@@ -45,7 +46,9 @@ class NeuralNet(torch.nn.Module):
         @param x: an (N, in_size) torch tensor
         @return y: an (N, out_size) torch tensor of output from the network
         """
-        return torch.zeros(x.shape[0], 3)
+        y = self.net(x)
+        return y
+        #return torch.zeros(x.shape[0], 3)
 
     def step(self, x,y):
         """
@@ -54,6 +57,7 @@ class NeuralNet(torch.nn.Module):
         @param y: an (N,) torch tensor
         @return L: total empirical risk (mean of losses) at this time step as a float
         """
+
         L=0.0
         return L
 
