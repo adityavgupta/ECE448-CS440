@@ -31,6 +31,7 @@ class NeuralNet(torch.nn.Module):
         """
         super(NeuralNet, self).__init__()
         self.loss_fn = loss_fn
+        self.lrate = lrate
         self.net = torch.nn.Sequential(torch.nn.Linear(in_size, 128), torch.nn.ReLU(), torch.nn.Linear(128, out_size))
 
     def get_parameters(self):
@@ -57,7 +58,7 @@ class NeuralNet(torch.nn.Module):
         @param y: an (N,) torch tensor
         @return L: total empirical risk (mean of losses) at this time step as a float
         """
-        optimizer = torch.optim.SGD(self.get_parameters(), lr=1e-4)
+        optimizer = torch.optim.SGD(self.get_parameters(), lr=self.lrate)
         _input = y
         _target = self.forward(x)
         loss = self.loss_fn
@@ -92,14 +93,16 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
     net = NeuralNet(lrate, loss_fn, in_size, out_size)
     losses = list()
 
+    train_set1 = (train_set-train_set.mean())/(train_set.std())
     for i in range(n_iter):
-        batch = train_set[i*batch_size:(i+1)*batch_size]
+        batch = train_set1[i*batch_size:(i+1)*batch_size]
         label_batch = train_labels[i*batch_size:(i+1)*batch_size]
         losses.append(net.step(batch, label_batch))
 
     #PATH = ''
     #torch.save(net.stat_dict(), PATH)
     yhats = np.zeros(len(dev_set))
+    dev_set = (dev_set-train_set.mean())/(train_set.std())
     res = net(dev_set).detach().numpy()
     i = 0
     for r in res:
