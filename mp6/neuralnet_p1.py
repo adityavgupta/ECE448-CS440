@@ -60,15 +60,15 @@ class NeuralNet(torch.nn.Module):
         optimizer = torch.optim.SGD(self.get_parameters(), lr=1e-4)
         _input = y
         _target = self.forward(x)
-        loss = self.loss_fn(_input, _target)
+        loss = self.loss_fn
+        _loss = loss(_target, _input)
 
         # Zero gradients, perform a backward pass, and update the weights
         optimizer.zero_grad()
-        loss.backward()
+        _loss.backward()
         optimizer.step()
 
-        L=loss.items()
-        return L
+        return _loss.item()
 
 def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
     """ Fit a neural net.  Use the full batch size.
@@ -99,8 +99,10 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
 
     #PATH = ''
     #torch.save(net.stat_dict(), PATH)
-    yhats = np.zeros(dev_set.size[0])
+    yhats = np.zeros(len(dev_set))
+    res = net(dev_set).detach().numpy()
     i = 0
-    for img in dev_set:
-        yhats[i] = np.argmax(img)
+    for r in res:
+        yhats[i] = np.argmax(res[i])
+        i += 1
     return losses,yhats, net
