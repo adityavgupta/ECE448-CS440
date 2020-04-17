@@ -81,7 +81,7 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
     @return net: A NeuralNet object
     # NOTE: This must work for arbitrary M and N
     """
-    lrate = 1e-2
+    lrate = 1e-1
     loss_fn = torch.nn.CrossEntropyLoss()
     in_size = 784
     out_size = 5
@@ -103,5 +103,4 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
     for r in res:
         yhats[i] = np.argmax(res[i])
         i += 1
- 
     return losses,yhats, net
