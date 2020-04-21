@@ -53,7 +53,7 @@ class NeuralNet(torch.nn.Module):
         @param y: an (N,) torch tensor
         @return L: total empirical risk (mean of losses) at this time step as a float
         """
-        optimizer = torch.optim.SGD(self.get_parameters(), lr=self.lrate)
+        optimizer = torch.optim.SGD(self.get_parameters(), lr=self.lrate, weight_decay = 0.01)
         _input = y
         _target = self.forward(x)
         loss = self.loss_fn
@@ -90,12 +90,15 @@ def fit(train_set,train_labels,dev_set,n_iter,batch_size=100):
 
     train_set1 = (train_set-train_set.mean())/(train_set.std())
     for i in range(n_iter):
-        batch = train_set1[i*batch_size:(i+1)*batch_size]
-        label_batch = train_labels[i*batch_size:(i+1)*batch_size]
+        # if i goes beyond N/n_iter in this case 7500/100 = 75, wrap around the batches
+        if(i >=75):
+            batch = train_set1[(i-77)*batch_size:(i-77+1)*batch_size]
+            label_batch = train_labels[(i-77)*batch_size:(i-77+1)*batch_size]
+        else:
+            batch = train_set1[i*batch_size:(i+1)*batch_size]
+            label_batch = train_labels[i*batch_size:(i+1)*batch_size]
         losses.append(net.step(batch, label_batch))
 
-    #PATH = ''
-    #torch.save(net.stat_dict(), PATH)
     yhats = np.zeros(len(dev_set))
     dev_set = (dev_set-train_set.mean())/(train_set.std())
     res = net(dev_set).detach().numpy()
