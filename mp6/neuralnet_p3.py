@@ -37,8 +37,8 @@ class NeuralNet(torch.nn.Module):
            self.encoder should be able to take tensor of shape [batch_size, 1, 28, 28] as input.
            self.decoder output tensor should have shape [batch_size, 1, 28, 28].
         """
-        self.encoder = torch.nn.Sequential(torch.nn.Conv2d(1,6, kernel_size=5), nn.ReLU(True), torch.nn.Conv2d(6,1,kernel_size=5), torch.nn.ReLU(True))
-        self.decoder = torch.nn.Sequential(torch.nn.ConvTranspose2d(1,6, kernel_size=5), torch.nn.ReLU(True), torch.nn.ConvTranspose2d(6,1,kernel_size=5), nn.ReLU(True))
+        self.encoder = torch.nn.Sequential(torch.nn.Conv2d(1,32, kernel_size=10), nn.ReLU())#, torch.nn.Conv2d(6,1,kernel_size=10), nn.ReLU())
+        self.decoder = torch.nn.Sequential(torch.nn.ConvTranspose2d(32,1, kernel_size=10), torch.nn.ReLU())#, torch.nn.ConvTranspose2d(6,1,kernel_size=10), nn.ReLU())
         self.loss_fn = loss_fn
         self.lrate = lrate
 
@@ -66,12 +66,10 @@ class NeuralNet(torch.nn.Module):
         @param x: an (N, in_size) torch tensor
         @return L: total empirical risk (mean of losses) at this time step as a float
         """
-        optimizer = torch.optim.Adam(self.get_parameters(), lr=self.lrate, weight_decay = 0.01)
-        #_input = y
+        optimizer = torch.optim.Adam(self.get_parameters(), lr=self.lrate)
         _target = self.forward(x)
-        #print(_target.shape)
         loss = self.loss_fn
-        _loss = loss(_target.view(-1,1,28,28), _target.view(-1,1,28,28)) #loss function is MSELoss()
+        _loss = loss(_target, _target) #loss function is MSELoss()
 
         # Zero gradients, perform a backward pass, and update the weights
         optimizer.zero_grad()
@@ -94,37 +92,22 @@ def fit(train_set,dev_set,n_iter,batch_size=100):
     @return net: A NeuralNet object
     # NOTE: This must work for arbitrary M and N
     """
-    lrate = 0.1
+    lrate = 1e-3
     distance = nn.MSELoss() #loss_fn
-    in_size = 784
-    out_size = 5
-    losses = list()
-    ts_mean = train_set.mean()
-    ts_std = train_set.std()
+    in_size, out_size = 784, 5
 
-    train_set1 = (train_set-ts_mean)/ts_std
+    batch_num = train_set.size()[0]//batch_size
+    
     net = NeuralNet(lrate, distance, in_size, out_size)
-
+    losses = list()
+    
     for i in range(n_iter):
-        # if i goes beyond N/n_iter in this case 7500/100 = 75, wrap around the batches
-        if(i >=75):
-            batch = train_set1[(i-75)*batch_size:(i-75+1)*batch_size]
-            #label_batch = train_labels[(i-77)*batch_size:(i-77+1)*batch_size]
-        else:
-            batch = train_set1[i*batch_size:(i+1)*batch_size]
-            #label_batch = train_labels[i*batch_size:(i+1)*batch_size]
-        #print(i, batch)
+        start = (i%batch_num)*batch_size
+        batch = train_set[start:start+batch_size]
         losses.append(net.step(batch))
 
-    xhats = np.zeros(dev_set.shape[0])
-    dev_set = (dev_set-ts_mean)/ts_std
-    res = net(dev_set)
-    res = res.view(len(dev_set), 784).detach().numpy()
-    i = 0
-    for r in res:
-        xhats[i] = np.argmax(res[i])
-        i += 1
-    #print(xhats.shape)
-    return losses,res, net
+    xhats = net(dev_set)
+    xhats = xhats.view(len(dev_set), 784).detach().numpy()
 
+    return losses, xhats, net
 
