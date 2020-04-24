@@ -68,8 +68,7 @@ class NeuralNet(torch.nn.Module):
         """
         optimizer = torch.optim.Adam(self.get_parameters(), lr=self.lrate)
         _target = self.forward(x)
-        loss = self.loss_fn
-        _loss = loss(_target, _target) #loss function is MSELoss()
+        _loss = self.loss_fn(_target.view(-1,1,28,28), _target.view(-1,1,28,28)) #loss function is MSELoss()
 
         # Zero gradients, perform a backward pass, and update the weights
         optimizer.zero_grad()
