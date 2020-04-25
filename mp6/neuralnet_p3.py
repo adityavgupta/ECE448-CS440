@@ -37,8 +37,8 @@ class NeuralNet(torch.nn.Module):
            self.encoder should be able to take tensor of shape [batch_size, 1, 28, 28] as input.
            self.decoder output tensor should have shape [batch_size, 1, 28, 28].
         """
-        self.encoder = torch.nn.Sequential(torch.nn.Conv2d(1,32, kernel_size=10), nn.ReLU())#, torch.nn.Conv2d(6,1,kernel_size=10), nn.ReLU())
-        self.decoder = torch.nn.Sequential(torch.nn.ConvTranspose2d(32,1, kernel_size=10), torch.nn.ReLU())#, torch.nn.ConvTranspose2d(6,1,kernel_size=10), nn.ReLU())
+        self.encoder = torch.nn.Sequential(torch.nn.Conv2d(1,15, kernel_size=6), nn.ReLU())#, torch.nn.Conv2d(6,1,kernel_size=10), nn.ReLU())
+        self.decoder = torch.nn.Sequential(torch.nn.ConvTranspose2d(15,1, kernel_size=6), torch.nn.ReLU())#, torch.nn.ConvTranspose2d(6,1,kernel_size=10), nn.ReLU())
         self.loss_fn = loss_fn
         self.lrate = lrate
 
@@ -56,8 +56,8 @@ class NeuralNet(torch.nn.Module):
                       Note that self.decoder output needs to be reshaped from
                       [N, 1, 28, 28] to [N, out_size] beforn return.
         """
-        x = x.view(x.shape[0],1,28,28)
-        return self.decoder(self.encoder(x))
+        x_prime = x.view(x.shape[0],1,28,28)
+        return self.decoder(self.encoder(x_prime)).view(x.shape[0], 28*28)
 
     def step(self, x):
         # x [100, 784]
@@ -68,7 +68,7 @@ class NeuralNet(torch.nn.Module):
         """
         optimizer = torch.optim.Adam(self.get_parameters(), lr=self.lrate)
         _target = self.forward(x)
-        _loss = self.loss_fn(_target.view(-1,1,28,28), _target.view(-1,1,28,28)) #loss function is MSELoss()
+        _loss = self.loss_fn(_target, _target) #loss function is MSELoss()
 
         # Zero gradients, perform a backward pass, and update the weights
         optimizer.zero_grad()
@@ -91,7 +91,7 @@ def fit(train_set,dev_set,n_iter,batch_size=100):
     @return net: A NeuralNet object
     # NOTE: This must work for arbitrary M and N
     """
-    lrate = 1e-3
+    lrate = 1e-4
     distance = nn.MSELoss() #loss_fn
     in_size, out_size = 784, 5
 
