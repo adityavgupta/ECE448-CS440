@@ -24,6 +24,11 @@ class TabQPolicy(QPolicy):
         """
         super().__init__(len(buckets), actionsize, lr, gamma)
         self.env = env
+        self.model = np.zeros((len(buckets), actionsize))
+        self.lr = lr
+        self.gamma = gamma
+        self.buckets = buckets
+        self.actionsize = actionsize
 
     def discretize(self, obs):
         """
@@ -47,6 +52,7 @@ class TabQPolicy(QPolicy):
         
         @return qvals: the q values for the state for each action. 
         """
+        return self.model[states]
 
     def td_step(self, state, action, reward, next_state, done):
         """
@@ -60,7 +66,17 @@ class TabQPolicy(QPolicy):
         @param done: true if episode has terminated, false otherwise
         @return loss: total loss the at this time step
         """
+        d_curr_state = self.discretized(state)
+        q_vals = self.model[d_curr_state, action]
 
+        d_next_state = self.discretized(next_state)
+        if done == False:
+            target = reward+ self.gamma*np.max(self.model[d_next_state, (0,)], self.model[d_next_state, (1,)])
+        else:
+            target = reward
+        self.model[d_curr_state, (action,)] = q_vals + self.lr*(target - q_vals)
+        loss = (q_vals - target)**2
+        return loss
     def save(self, outpath):
         """
         saves the model at the specified outpath
@@ -75,7 +91,7 @@ if __name__ == '__main__':
 
     statesize = env.observation_space.shape[0]
     actionsize = env.action_space.n
-    policy = TabQPolicy(env, buckets=(2, 2), actionsize=actionsize, lr=args.lr, gamma=args.gamma)
+    policy = TabQPolicy(env, buckets=(6, 6), actionsize=actionsize, lr=args.lr, gamma=args.gamma)
 
     utils.qlearn(env, policy, args)
 
