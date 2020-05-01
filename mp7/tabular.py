@@ -75,8 +75,9 @@ class TabQPolicy(QPolicy):
         q_vals = self.model[d_curr_state+ (action,)]
 
         d_next_state = self.discretize(next_state)
-        print(next_state)
-        if (done == True) and (next_state[0] == env.goal_position):
+        #print(next_state)
+        if (done == True) and (next_state[0] == self.env.goal_position):
+            reward = 1.0
             target = reward
         else:
             target = reward+ self.gamma*max(self.model[d_next_state+ (0,)], self.model[d_next_state+ (1,)], self.model[d_next_state + (2,)])
