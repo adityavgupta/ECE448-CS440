@@ -29,6 +29,7 @@ class TabQPolicy(QPolicy):
         self.lr = lr
         self.gamma = gamma
         self.actionsize = actionsize
+        self.N_table = dict()
 
     def discretize(self, obs):
         """
@@ -73,6 +74,11 @@ class TabQPolicy(QPolicy):
         """
         d_curr_state = self.discretize(state)
         q_vals = self.model[d_curr_state+ (action,)]
+
+        #decayed learning rate
+        self.N_table[q_vals] = self.N_table.get(q_vals, 0) + 1
+        C = 10
+        self.lr = C/(C+self.N_table[q_vals])
 
         d_next_state = self.discretize(next_state)
         #print(next_state)
