@@ -77,11 +77,11 @@ class TabQPolicy(QPolicy):
 
         #decayed learning rate
         self.N_table[q_vals] = self.N_table.get(q_vals, 0) + 1
-        C = 10
+        C = 0.01
         self.lr = C/(C+self.N_table[q_vals])
 
         d_next_state = self.discretize(next_state)
-        #print(next_state)
+        
         if (done == True) and (next_state[0] == self.env.goal_position):
             reward = 1.0
             target = reward
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
     statesize = env.observation_space.shape[0]
     actionsize = env.action_space.n
-    policy = TabQPolicy(env, buckets=(6,6), actionsize=actionsize, lr=args.lr, gamma=args.gamma)
+    policy = TabQPolicy(env, buckets=(10,10), actionsize=actionsize, lr=args.lr, gamma=args.gamma)
 
     utils.qlearn(env, policy, args)
 
