@@ -78,7 +78,7 @@ class TabQPolicy(QPolicy):
         #decayed learning rate
         self.N_table[q_vals] = self.N_table.get(q_vals, 0) + 1
         C = 0.01
-        self.lr = C/(C+self.N_table[q_vals])
+        self.lr = min(self.lr,C/(C+self.N_table[q_vals]))
 
         d_next_state = self.discretize(next_state)
         
