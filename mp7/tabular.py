@@ -52,10 +52,11 @@ class TabQPolicy(QPolicy):
         
         @return qvals: the q values for the state for each action. 
         """
-        qvals = np.zeros((1,2))
+        qvals = np.zeros((1,3))
         d_state = self.discretize(states[0])
         qvals[0][0] = self.model[d_state + (0,)]
-        qvals[0][1] = self.model[d_state+ (1,)]
+        qvals[0][1] = self.model[d_state + (1,)]
+        qvals[0][2] = self.model[d_state + (2,)]
         return qvals
 
     def td_step(self, state, action, reward, next_state, done):
@@ -74,11 +75,13 @@ class TabQPolicy(QPolicy):
         q_vals = self.model[d_curr_state+ (action,)]
 
         d_next_state = self.discretize(next_state)
-        if done is None:
-            target = reward+ self.gamma*max(self.model[d_next_state+ (0,)], self.model[d_next_state+ (1,)])
-        else:
+        print(next_state)
+        if (done == True) and (next_state[0] == env.goal_position):
             target = reward
-        self.model[d_curr_state, (action,)] = q_vals + self.lr*(target - q_vals)
+        else:
+            target = reward+ self.gamma*max(self.model[d_next_state+ (0,)], self.model[d_next_state+ (1,)], self.model[d_next_state + (2,)])
+
+        self.model[d_curr_state + (action,)] = q_vals + self.lr*(target - q_vals)
         loss = (q_vals - target)**2
         return loss
     def save(self, outpath):
@@ -95,7 +98,7 @@ if __name__ == '__main__':
 
     statesize = env.observation_space.shape[0]
     actionsize = env.action_space.n
-    policy = TabQPolicy(env, buckets=(10,10), actionsize=actionsize, lr=args.lr, gamma=args.gamma)
+    policy = TabQPolicy(env, buckets=(6,6), actionsize=actionsize, lr=args.lr, gamma=args.gamma)
 
     utils.qlearn(env, policy, args)
 
