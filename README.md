@@ -1,5 +1,5 @@
 # ECE448-CS440 #
-MP's for Artificial Intelligence taken at the UIUC in spring 2020
+MP's for Artificial Intelligence taken at UIUC in spring 2020
 
 ## DO NOT COPY. Only for reference ##
 
